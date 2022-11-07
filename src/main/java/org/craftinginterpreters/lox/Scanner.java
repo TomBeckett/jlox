@@ -1,9 +1,6 @@
 package org.craftinginterpreters.lox;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 class Scanner {
     private final String source;
@@ -51,6 +48,7 @@ class Scanner {
         return current >= source.length();
     }
 
+    @SuppressWarnings("java:S3776")
     private void scanToken() {
         final var c = advance();
         switch (c) {
@@ -63,16 +61,28 @@ class Scanner {
             case '-' -> addToken(TokenType.MINUS);
             case '+' -> addToken(TokenType.PLUS);
             case ';' -> addToken(TokenType.SEMICOLON);
-            case '*' -> addToken(TokenType.STAR);
+            case '*' -> {
+                if (match('/')) {
+                    // finish advancing past comment
+                    while (peek() != '\n' && !isAtEnd()) {
+                        advance();
+                    }
+                } else {
+                    addToken(TokenType.STAR);
+                }
+            }
             case '!' -> addToken(match('=') ? TokenType.BANG_EQUAL : TokenType.BANG);
             case '=' -> addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
             case '<' -> addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
             case '>' -> addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER);
             case '/' -> {
                 if (match('/')) {
-                    // Commented out code
+                    // A comment goes until the end of the line.
                     while (peek() != '\n' && !isAtEnd()) {
-                        // Advance through commented out code.
+                        advance();
+                    }
+                } else if (match('*')) {
+                    while (peek() != '*' && !isAtEnd()) {
                         advance();
                     }
                 } else {
@@ -115,7 +125,6 @@ class Scanner {
         // Remove surrounding quotes.
         final var value = source.substring(start + 1, current - 1);
         addToken(TokenType.STRING, value);
-
     }
 
     private void number() {
@@ -145,7 +154,7 @@ class Scanner {
         final var text = source.substring(start, current);
 
         // Try to get the Lox identifier from the map of keywords, or we assume its a user defined one.
-        var type = keywords.getOrDefault(text, TokenType.IDENTIFIER);
+        var type = keywords.getOrDefault(text.toLowerCase(Locale.ROOT), TokenType.IDENTIFIER);
         addToken(type);
     }
 
