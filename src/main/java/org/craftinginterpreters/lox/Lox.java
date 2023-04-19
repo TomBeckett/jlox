@@ -21,6 +21,12 @@ public class Lox {
         }
     }
 
+    /**
+     * Run using the provided file.
+     *
+     * @param path The full path to the file.
+     * @throws IOException Error reading file.
+     */
     private static void runFile(String path) throws IOException {
         final var bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
@@ -31,6 +37,11 @@ public class Lox {
         }
     }
 
+    /**
+     * Run in interactive mode.
+     *
+     * @throws IOException Error reading input from terminal.
+     */
     private static void runPrompt() throws IOException {
         final var input = new InputStreamReader(System.in);
         final var reader = new BufferedReader(input);
@@ -46,19 +57,51 @@ public class Lox {
         }
     }
 
-    private static void run(String source) {
+    private static void run(final String source) {
         final var scanner = new Scanner(source);
         final var tokens = scanner.scanTokens();
-        for (var token: tokens) {
-            System.out.println(token);
-        }
+
+        final var parser = new Parser(tokens);
+        final var expression = parser.parse();
+
+        // Stop if there was a syntax error
+        if (hadError) return;
+
+        System.out.println(new AstPrinter().print(expression));
     }
 
-    static void error(int line, String message) {
+    /**
+     * Print an error message to the console. Used during scanning.
+     *
+     * @param line The current line of the file being scanned.
+     * @param message A message hint on what went wrong.
+     */
+    static void error(final int line,final String message) {
         report(line, "", message);
     }
 
-    private static void report(int line, String where, String message) {
+    /**
+     * Print to console.
+     *
+     * @param line Line of error.
+     * @param where Location of error.
+     * @param message User friendly message.
+     */
+    private static void report(final int line,final String where,final String message) {
         System.err.printf("[line %d] Error %s: %s%n", line, where, message);
+    }
+
+    /**
+     * Print an error message to the console. Used during parsing.
+     *
+     * @param token The current token that caused the error.
+     * @param message A message hint on what went wrong.
+     */
+    static void error(final Token token, final String message) {
+        if (token.type() == TokenType.EOF) {
+            report(token.line(), " at end", message);
+        } else {
+            report(token.line(), " at '%s'".formatted(token.lexeme()), message);
+        }
     }
 }
