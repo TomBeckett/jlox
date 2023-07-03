@@ -8,6 +8,13 @@ import java.util.List;
 import java.util.Locale;
 
 public class GenerateAst {
+    /**
+     * Generates the abstract syntax tree code.
+     * Expects one argument - the full path to 'src/main/java/org/craftinginterpreters/lox'.
+     *
+     * @param args arguments passed from the commandline.
+     * @throws IOException due to issue generating file.
+     */
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {
             System.err.println("Usage: generate_ast < output directory");
