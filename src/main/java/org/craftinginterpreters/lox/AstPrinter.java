@@ -1,5 +1,8 @@
 package org.craftinginterpreters.lox;
 
+/**
+ * Will 'pretty print' a given parsed syntax tree to the console.
+ */
 public class AstPrinter implements Expr.Visitor<String>{
     String print(final Expr expr) {
         return expr.accept(this);
