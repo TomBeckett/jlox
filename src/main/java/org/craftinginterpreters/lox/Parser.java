@@ -1,11 +1,14 @@
 package org.craftinginterpreters.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.craftinginterpreters.lox.TokenType.*;
 
 public class Parser {
-    private static class ParserError extends RuntimeException{}
+    private static class ParserError extends RuntimeException {
+    }
+
     private final List<Token> tokens;
     private int current = 0;
 
@@ -13,16 +16,33 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    Expr parse() {
-        try {
-            return expression();
-        } catch(final ParserError error) {
-            return null;
+    List<Stmt> parse() {
+        final var statements = new ArrayList<Stmt>();
+        while (!isAtEnd()) {
+            statements.add(statement());
         }
+        return statements;
     }
 
     private Expr expression() {
         return equality();
+    }
+
+    private Stmt statement() {
+        if (match(PRINT)) return printStatement();
+        return expressionStatement();
+    }
+
+    private Stmt printStatement() {
+        final var value = expression();
+        consume(SEMICOLON, "Expect ';' after value");
+        return new Stmt.Print(value);
+    }
+
+    private Stmt expressionStatement() {
+        final var expr = expression();
+        consume(SEMICOLON, "Expect ';' after value");
+        return new Stmt.Expression(expr);
     }
 
     private Expr equality() {
@@ -85,7 +105,7 @@ public class Parser {
 
         if (match(LEFT_PAREN)) {
             final var expr = expression();
-            consume(RIGHT_PAREN, "Expect ')' after expression." );
+            consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
 
@@ -98,8 +118,8 @@ public class Parser {
      * @param types The types to check current token against.
      * @return Returns true if there is a match.
      */
-    private boolean match(final TokenType ...types) {
-        for (final TokenType type: types) {
+    private boolean match(final TokenType... types) {
+        for (final TokenType type : types) {
             if (check(type)) {
                 advance();
                 return true;
@@ -112,7 +132,7 @@ public class Parser {
      * Checks if the current token matches the given type.
      * Unlike #match will throw an error if a match is not found.
      *
-     * @param type The expected type of current token.
+     * @param type    The expected type of current token.
      * @param message A custom message to be logged.
      * @return The next token if valid.
      */
@@ -163,7 +183,7 @@ public class Parser {
     /**
      * Log the current error to terminal and return a custom error that can either be thrown or ignored.
      *
-     * @param token The token which caused the error.
+     * @param token   The token which caused the error.
      * @param message A custom message to be logged.
      * @return A new ParserError.
      */
@@ -177,7 +197,7 @@ public class Parser {
      */
     private void synchronize() {
         advance();
-        while(!isAtEnd()) {
+        while (!isAtEnd()) {
             if (previous().type() == SEMICOLON) return;
             switch (peek().type()) {
                 case CLASS, FOR, FUN, IF, PRINT, RETURN, VAR, WHILE -> {

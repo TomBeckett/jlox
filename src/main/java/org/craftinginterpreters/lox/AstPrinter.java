@@ -3,7 +3,7 @@ package org.craftinginterpreters.lox;
 /**
  * Will 'pretty print' a given parsed syntax tree to the console.
  */
-public class AstPrinter implements Expr.Visitor<String>{
+public class AstPrinter implements Expr.Visitor<String> {
     String print(final Expr expr) {
         return expr.accept(this);
     }
@@ -29,13 +29,13 @@ public class AstPrinter implements Expr.Visitor<String>{
         return parenthesize(expr.operator.lexeme(), expr.right);
     }
 
-    private String parenthesize(final String name, final Expr ...exprs) {
+    private String parenthesize(final String name, final Expr... exprs) {
         final var builder = new StringBuilder();
 
         builder.append("(").append(name);
-        for(Expr expr: exprs) {
-           builder.append(" ");
-           builder.append(expr.accept(this));
+        for (final Expr expr : exprs) {
+            builder.append(" ");
+            builder.append(expr.accept(this));
         }
         builder.append(")");
 

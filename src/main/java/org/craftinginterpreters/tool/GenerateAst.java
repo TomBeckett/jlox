@@ -21,12 +21,19 @@ public class GenerateAst {
             System.exit(64);
         }
         final var outputDir = args[0];
+
         defineAst(outputDir, "Expr", List.of(
                 "Binary   : Expr left, Token operator, Expr right",
                 "Grouping : Expr expression",
                 "Literal  : Object value",
                 "Unary    : Token operator, Expr right"
         ));
+
+        defineAst(outputDir, "Stmt", List.of(
+                "Expression : Expr expression",
+                "Print      : Expr expression"
+        ));
+
         System.out.println("Expr.java generated successfully: " + outputDir + "/Expr.java");
         System.exit(0);
     }
@@ -46,13 +53,13 @@ public class GenerateAst {
             types.stream()
                     .map(type -> type.split(":"))
                     .forEach(parts -> {
-                final var className = parts[0].trim();
-                final var fields = parts[1].trim();
-                defineType(writer, baseName, className, fields);
-            });
+                        final var className = parts[0].trim();
+                        final var fields = parts[1].trim();
+                        defineType(writer, baseName, className, fields);
+                    });
 
             // The base accept() method.
-            writer.println("    abstract <R> R accept(Visitor<R> visitor);");
+            writer.println("    abstract <R> R accept(final Visitor<R> visitor);");
 
             writer.println("}");
             writer.println();
@@ -65,11 +72,11 @@ public class GenerateAst {
         types.stream()
                 .map(type -> type.split(":")[0].trim())
                 .forEach(typeName ->
-                        writer.printf("        R visit%s%s(%s %s);%n",
-                            typeName,
-                            baseName,
-                            typeName,
-                            baseName.toLowerCase(Locale.ROOT)
+                        writer.printf("        R visit%s%s(final %s %s);%n",
+                                typeName,
+                                baseName,
+                                typeName,
+                                baseName.toLowerCase(Locale.ROOT)
                         )
                 );
 
@@ -84,7 +91,7 @@ public class GenerateAst {
         writer.printf("    static class %s extends %s {%n", className, baseName);
 
         // Constructor
-        writer.printf("        %s(%s) {%n", className, fieldsList);
+        writer.printf("        %s(final %s) {%n", className, fieldsList);
 
         // Store parameters
         final var fields = fieldsList.split(", ");
@@ -97,7 +104,7 @@ public class GenerateAst {
         // Visitor pattern.
         writer.println();
         writer.println("        @Override");
-        writer.println("        <R> R accept(Visitor<R> visitor) {");
+        writer.println("        <R> R accept(final Visitor<R> visitor) {");
         writer.println("            return visitor.visit" + className + baseName + "(this);");
         writer.println("        }");
 

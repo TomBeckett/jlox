@@ -3,21 +3,21 @@ package org.craftinginterpreters.lox;
 
 abstract class Expr {
     interface Visitor<R> {
-        R visitBinaryExpr(Binary expr);
-        R visitGroupingExpr(Grouping expr);
-        R visitLiteralExpr(Literal expr);
-        R visitUnaryExpr(Unary expr);
+        R visitBinaryExpr(final Binary expr);
+        R visitGroupingExpr(final Grouping expr);
+        R visitLiteralExpr(final Literal expr);
+        R visitUnaryExpr(final Unary expr);
     }
 
     static class Binary extends Expr {
-        Binary(Expr left, Token operator, Expr right) {
+        Binary(final Expr left, Token operator, Expr right) {
             this.left = left;
             this.operator = operator;
             this.right = right;
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        <R> R accept(final Visitor<R> visitor) {
             return visitor.visitBinaryExpr(this);
         }
 
@@ -27,12 +27,12 @@ abstract class Expr {
     }
 
     static class Grouping extends Expr {
-        Grouping(Expr expression) {
+        Grouping(final Expr expression) {
             this.expression = expression;
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        <R> R accept(final Visitor<R> visitor) {
             return visitor.visitGroupingExpr(this);
         }
 
@@ -40,12 +40,12 @@ abstract class Expr {
     }
 
     static class Literal extends Expr {
-        Literal(Object value) {
+        Literal(final Object value) {
             this.value = value;
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        <R> R accept(final Visitor<R> visitor) {
             return visitor.visitLiteralExpr(this);
         }
 
@@ -53,13 +53,13 @@ abstract class Expr {
     }
 
     static class Unary extends Expr {
-        Unary(Token operator, Expr right) {
+        Unary(final Token operator, Expr right) {
             this.operator = operator;
             this.right = right;
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        <R> R accept(final Visitor<R> visitor) {
             return visitor.visitUnaryExpr(this);
         }
 
@@ -67,6 +67,6 @@ abstract class Expr {
         final Expr right;
     }
 
-    abstract <R> R accept(Visitor<R> visitor);
+    abstract <R> R accept(final Visitor<R> visitor);
 }
 

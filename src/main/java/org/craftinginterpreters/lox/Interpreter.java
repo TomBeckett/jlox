@@ -1,15 +1,18 @@
 package org.craftinginterpreters.lox;
 
-public class Interpreter implements Expr.Visitor<Object> {
+import java.util.List;
+
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     /**
-     * Takes a syntax tree for an expression to be evaluated and printed to console.
+     * Takes a syntax tree for a list of statements to be evaluated and printed to console.
      *
-     * @param expression The expression to evaluate.
+     * @param statements The statements to evaluate.
      */
-    void interpret(final Expr expression) {
+    void interpret(final List<Stmt> statements) {
         try {
-            final Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (final var statement : statements) {
+                execute(statement);
+            }
         } catch (final RuntimeError error) {
             Lox.runtimeError(error);
         }
@@ -113,6 +116,40 @@ public class Interpreter implements Expr.Visitor<Object> {
             }
             default -> null; // Unreachable code.
         };
+    }
+
+    /**
+     * Evaluate the statement's inner expression.
+     *
+     * @param stmt The statement.
+     * @return Nothing. Not required.
+     */
+    @Override
+    public Void visitExpressionStmt(final Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    /**
+     * Print a statement to console.
+     *
+     * @param stmt The statement.
+     * @return Nothing. Not required.
+     */
+    @Override
+    public Void visitPrintStmt(final Stmt.Print stmt) {
+        final var value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    /**
+     * Execute the statement via visitor pattern.
+     *
+     * @param stmt The statement to execute.
+     */
+    private void execute(final Stmt stmt) {
+        stmt.accept(this);
     }
 
     /**

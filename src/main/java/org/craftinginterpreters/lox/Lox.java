@@ -67,9 +67,12 @@ public class Lox {
         final var tokens = scanner.scanTokens();
 
         final var parser = new Parser(tokens);
-        final var expression = parser.parse();
+        final var statements = parser.parse();
 
-        interpreter.interpret(expression);
+        // Stop if there was an error
+        if (hadError) return;
+
+        interpreter.interpret(statements);
     }
 
     /**
